@@ -12,13 +12,12 @@ const Page = () => {
   const [userInput, setUserInput] = useState("");
   const [currentPosition, setCurrentPosition] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-
+  const [accuracy, setaccuray] = useState(100);
   // Create array of characters
   const characters = [];
   for (let i = 0; i < sample_text[0].length; i++) {
     characters.push(sample_text[0][i]);
   }
-
   const handleKeyPress = (event: any) => {
     if (event.key === "Backspace") {
       setUserInput((prev) => prev.slice(0, -1));
@@ -34,9 +33,25 @@ const Page = () => {
       }
     }
   };
+  const user_accuracy = (data: string) => {
+    let correct_char = 0;
+    if (data.length == 0) {
+      setaccuray(100);
+      return;
+    }
+    for (let i = 0; i < data.length; i++) {
+      if (sample_text[0][i] === data[i]) {
+        correct_char += 1;
+      }
+    }
+
+    let accuracy = (correct_char / data.length) * 100;
+    setaccuray(accuracy);
+  };
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
+    user_accuracy(userInput);
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
@@ -89,7 +104,9 @@ const Page = () => {
             <h2 className="text-2xl font-bold text-cyan-300 mb-2">
               Completed! 🎉
             </h2>
-            <p className="text-gray-300">Speed: 45 WPM | Accuracy: 98%</p>
+            <p className="text-gray-300">
+              Speed: 45 WPM | Accuracy: {accuracy}
+            </p>
             <button
               className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full hover:from-purple-500 hover:to-cyan-500 transition-all duration-300 font-medium"
               onClick={() => {
@@ -110,7 +127,7 @@ const Page = () => {
       <div className="flex gap-4 text-sm">
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">Accuracy:</span>{" "}
-          <span className="text-cyan-400 font-medium">98%</span>
+          <span className="text-cyan-400 font-medium">{accuracy}</span>
         </div>
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">WPM:</span>{" "}
