@@ -10,15 +10,21 @@ const sample_text = ["This is the text you need to type."];
 
 const Page = () => {
   const [userInput, setUserInput] = useState("");
-  const [currentPosition, setCurrentPosition] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [accuracy, setaccuray] = useState(100);
+  const [startime, setstarttime] = useState<number | null>(null);
+  const [wpm, setwpm] = useState(0);
+
   // Create array of characters
   const characters = [];
   for (let i = 0; i < sample_text[0].length; i++) {
     characters.push(sample_text[0][i]);
   }
+
   const handleKeyPress = (event: any) => {
+    if (startime == null && event.key.length == 1) {
+      setstarttime(Date.now());
+    }
     if (event.key === "Backspace") {
       setUserInput((prev) => prev.slice(0, -1));
     }
@@ -26,7 +32,7 @@ const Page = () => {
     else if (event.key.length === 1) {
       const newInput = userInput + event.key;
       setUserInput(newInput);
-
+      calculatewpm(startime);
       // Check if typing is complete
       if (newInput === sample_text[0]) {
         setIsComplete(true);
@@ -45,10 +51,16 @@ const Page = () => {
       }
     }
 
-    let accuracy = (correct_char / data.length) * 100;
+    let accuracy = Math.round((correct_char / data.length) * 100);
     setaccuray(accuracy);
   };
 
+  const calculatewpm = (time: number | null) => {
+    if (time == null) return;
+    const total_time = (Date.now() - time) / 60000;
+    const wpm = Math.round(userInput.length / 5 / total_time);
+    setwpm(wpm);
+  };
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
     user_accuracy(userInput);
@@ -105,7 +117,7 @@ const Page = () => {
               Completed! 🎉
             </h2>
             <p className="text-gray-300">
-              Speed: 45 WPM | Accuracy: {accuracy}
+              Speed: {wpm} WPM | Accuracy: {accuracy}
             </p>
             <button
               className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full hover:from-purple-500 hover:to-cyan-500 transition-all duration-300 font-medium"
@@ -131,7 +143,7 @@ const Page = () => {
         </div>
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">WPM:</span>{" "}
-          <span className="text-purple-400 font-medium">45</span>
+          <span className="text-purple-400 font-medium">{wpm}</span>
         </div>
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">Time:</span>{" "}
