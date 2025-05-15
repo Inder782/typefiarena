@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-
+import { formatStopwatch } from "@/lib/utils";
 /*
  at the moment static : need to make them dynmaic either from file or 
  from a backend.
@@ -11,11 +11,11 @@ const sample_text = ["This is the text you need to type."];
 const Page = () => {
   const [userInput, setUserInput] = useState("");
   const [isComplete, setIsComplete] = useState(false);
-  const [accuracy, setaccuray] = useState(100);
-  const [startime, setstarttime] = useState<number | null>(null);
-  const [wpm, setwpm] = useState(0);
-  const [elapsedTime, setelaspedTime] = useState(0);
-  const [timer_interval, setTimerInterval] = useState<NodeJS.Timeout | null>(
+  const [accuracy, setAccuracy] = useState(100);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [wpm, setWpm] = useState(0);
+  const [elapsedTime, setElaspedTime] = useState(0);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(
     null
   );
   // Create array of characters
@@ -25,22 +25,19 @@ const Page = () => {
   }
 
   const handleKeyPress = (event: any) => {
-    if (startime == null && event.key.length == 1) {
-      setstarttime(Date.now());
-      //start timer logic here
+    if (startTime == null && event.key.length == 1) {
+      setStartTime(Date.now());
       start_timer();
     }
-    if (event.key === "Backspace") {
-      setUserInput((prev) => prev.slice(0, -1));
-    }
+
     // Handle normal character keys
-    else if (event.key.length === 1) {
+    if (event.key.length === 1) {
       const newInput = userInput + event.key;
       setUserInput(newInput);
-      calculatewpm(startime);
+      calculatewpm(startTime);
 
-      // Check if typing is complete
-      if (newInput === sample_text[0]) {
+      // Check if typing is complete ( no backspaces are allowed, user needs accuracy)
+      if (newInput.length === sample_text[0].length) {
         setIsComplete(true);
         // stop timer logic here
         stop_timer();
@@ -50,7 +47,7 @@ const Page = () => {
   const user_accuracy = (data: string) => {
     let correct_char = 0;
     if (data.length == 0) {
-      setaccuray(100);
+      setAccuracy(100);
       return;
     }
     for (let i = 0; i < data.length; i++) {
@@ -60,14 +57,14 @@ const Page = () => {
     }
 
     let accuracy = Math.round((correct_char / data.length) * 100);
-    setaccuray(accuracy);
+    setAccuracy(accuracy);
   };
 
   const calculatewpm = (time: number | null) => {
     if (time == null) return;
     const total_time = (Date.now() - time) / 60000;
     const wpm = Math.round(userInput.length / 5 / total_time);
-    setwpm(wpm);
+    setWpm(wpm);
   };
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
@@ -78,32 +75,22 @@ const Page = () => {
   }, [userInput]);
 
   const start_timer = () => {
-    if (timer_interval) return;
+    // It stores the interval , this checks if id is there then don't execute
+    if (timerInterval) return;
 
     const interval = setInterval(() => {
-      setelaspedTime((prev) => prev + 100);
+      setElaspedTime((prev) => prev + 100);
     }, 100);
     setTimerInterval(interval);
   };
   const stop_timer = () => {
-    if (timer_interval) {
-      clearInterval(timer_interval);
+    // clear the interval and the timer stops
+    if (timerInterval) {
+      clearInterval(timerInterval);
       setTimerInterval(null);
     }
   };
-  const format_stopwatch = (time: number) => {
-    const minutes = Math.floor(time / 60000);
-    const seconds = Math.floor((time % 60000) / 1000);
-    const ms = Math.floor(time % 1000) / 10;
 
-    // Format with padding zeros
-    const formattedMinutes = String(minutes).padStart(2, "0");
-    const formattedSeconds = String(seconds).padStart(2, "0");
-    const formattedMs = String(ms).padStart(2, "0");
-
-    // Return formatted time string
-    return `${formattedMinutes}:${formattedSeconds}.${formattedMs}`;
-  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#03071E] via-[#370D94] to-[#4CC9F0] text-white p-6 relative overflow-hidden">
       <div className="w-full max-w-3xl backdrop-blur-md bg-black/30 rounded-xl border border-purple-500/20 shadow-xl p-8 mb-8">
@@ -183,7 +170,7 @@ const Page = () => {
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">Time:</span>{" "}
           <span className="text-green-400 font-medium">
-            {format_stopwatch(elapsedTime)}
+            {formatStopwatch(elapsedTime)}
           </span>
         </div>
       </div>
