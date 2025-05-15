@@ -14,7 +14,10 @@ const Page = () => {
   const [accuracy, setaccuray] = useState(100);
   const [startime, setstarttime] = useState<number | null>(null);
   const [wpm, setwpm] = useState(0);
-
+  const [elapsedTime, setelaspedTime] = useState(0);
+  const [timer_interval, setTimerInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
   // Create array of characters
   const characters = [];
   for (let i = 0; i < sample_text[0].length; i++) {
@@ -24,6 +27,8 @@ const Page = () => {
   const handleKeyPress = (event: any) => {
     if (startime == null && event.key.length == 1) {
       setstarttime(Date.now());
+      //start timer logic here
+      start_timer();
     }
     if (event.key === "Backspace") {
       setUserInput((prev) => prev.slice(0, -1));
@@ -33,9 +38,12 @@ const Page = () => {
       const newInput = userInput + event.key;
       setUserInput(newInput);
       calculatewpm(startime);
+
       // Check if typing is complete
       if (newInput === sample_text[0]) {
         setIsComplete(true);
+        // stop timer logic here
+        stop_timer();
       }
     }
   };
@@ -69,6 +77,33 @@ const Page = () => {
     };
   }, [userInput]);
 
+  const start_timer = () => {
+    if (timer_interval) return;
+
+    const interval = setInterval(() => {
+      setelaspedTime((prev) => prev + 100);
+    }, 100);
+    setTimerInterval(interval);
+  };
+  const stop_timer = () => {
+    if (timer_interval) {
+      clearInterval(timer_interval);
+      setTimerInterval(null);
+    }
+  };
+  const format_stopwatch = (time: number) => {
+    const minutes = Math.floor(time / 60000);
+    const seconds = Math.floor((time % 60000) / 1000);
+    const ms = Math.floor(time % 1000) / 10;
+
+    // Format with padding zeros
+    const formattedMinutes = String(minutes).padStart(2, "0");
+    const formattedSeconds = String(seconds).padStart(2, "0");
+    const formattedMs = String(ms).padStart(2, "0");
+
+    // Return formatted time string
+    return `${formattedMinutes}:${formattedSeconds}.${formattedMs}`;
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#03071E] via-[#370D94] to-[#4CC9F0] text-white p-6 relative overflow-hidden">
       <div className="w-full max-w-3xl backdrop-blur-md bg-black/30 rounded-xl border border-purple-500/20 shadow-xl p-8 mb-8">
@@ -147,7 +182,9 @@ const Page = () => {
         </div>
         <div className="px-4 py-2 bg-black/30 backdrop-blur-md rounded-lg border border-gray-700/50">
           <span className="text-gray-400">Time:</span>{" "}
-          <span className="text-green-400 font-medium">00:24</span>
+          <span className="text-green-400 font-medium">
+            {format_stopwatch(elapsedTime)}
+          </span>
         </div>
       </div>
     </div>
