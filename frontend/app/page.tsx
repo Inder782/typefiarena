@@ -6,7 +6,9 @@ import { formatStopwatch } from "@/lib/utils";
  from a backend.
  */
 
-const sample_text = ["This is the text you need to type."];
+const sample_text = [
+  "This is the text you need to type.This is the text you need to type.This is the text you need to type.This is the text you need to type.This is the text you need to type.This is the text you need to type.",
+];
 
 const Page = () => {
   const [userInput, setUserInput] = useState("");
